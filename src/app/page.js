@@ -16,18 +16,82 @@ import {
   Award,
   Truck,
   CheckCircle2,
-  Clock
+  Clock,
+  Eye,
+  Volume2
 } from "lucide-react";
 import { PRODUCTS, CATEGORIES, HEALTH_QUOTES, TESTIMONIALS, INSTAGRAM_POSTS } from "../data/products";
 import ProductCard from "../components/ProductCard";
 import QuickViewModal from "../components/QuickViewModal";
 import { useCart } from "../context/CartContext";
 
+const HERO_SHOWCASE = [
+  {
+    id: "mixed-nuts",
+    slug: "mixed-nuts-chikki",
+    title: "Mixed Nuts Chikki",
+    tabLabel: "Mixed Nuts Brittle",
+    tabIcon: Sparkles,
+    badge: "Crown Jewel 2026",
+    sensoryTag: "Stone-Rolled 3mm Glass Snap",
+    sensoryPill: "Acoustic 3mm Snap",
+    craftPill: "100% Kolhapur Gur",
+    categoryLabel: "Signature Brittle • Stone-Rolled",
+    description: "Mamra almonds, pistachios, cashews & golden walnuts folded in shimmering amber jaggery with an unforgettable acoustic crunch.",
+    price: 749,
+    originalPrice: 920,
+    unit: "/ 500g Tin",
+    savePercent: 18,
+    image: "/images/products/mixed-nuts-chikki.png",
+    defaultWeight: "500g"
+  },
+  {
+    id: "wedding-hampers",
+    slug: "wedding-gift-boxes",
+    title: "Royal Keepsake Hampers",
+    tabLabel: "Brass Gift Hampers",
+    tabIcon: Gift,
+    badge: "Celebration Reserve",
+    sensoryTag: "Brass Tin & Velvet Lining",
+    sensoryPill: "4 Royal Confections",
+    craftPill: "Pure Brass Keepsake",
+    categoryLabel: "Artisanal Gifting • Velvet Keepsake",
+    description: "Handcrafted ornate brass & velvet keepsake box customized with gold foil initials, packed with 4 royal brittle and dry fruit tin delicacies.",
+    price: 999,
+    originalPrice: 1200,
+    unit: "/ 1kg Keepsake",
+    savePercent: 17,
+    image: "/images/products/wedding-gift-box.png",
+    defaultWeight: "1kg"
+  },
+  {
+    id: "almond-chikki",
+    slug: "almond-chikki",
+    title: "Shahi Mamra Almond Brittle",
+    tabLabel: "Saffron Almond",
+    tabIcon: Award,
+    badge: "Royal Reserve",
+    sensoryTag: "Pure Kashmiri Kesar Infused",
+    sensoryPill: "Zero White Sugar",
+    craftPill: "Kashmiri Kesar",
+    categoryLabel: "Royal Brittle • Cold Roasted",
+    description: "Plump Mamra almonds slow-roasted over wood embers and caramelized in organic sugarcane jaggery with hand-picked saffron threads.",
+    price: 719,
+    originalPrice: 870,
+    unit: "/ 500g Tin",
+    savePercent: 17,
+    image: "/images/products/almond-chikki.png",
+    defaultWeight: "500g"
+  }
+];
+
 export default function HomePage() {
   const { addToCart } = useCart();
   const [quickViewProduct, setQuickViewProduct] = useState(null);
   const [activeQuoteIndex, setActiveQuoteIndex] = useState(0);
   const [featuredCarouselIndex, setFeaturedCarouselIndex] = useState(0);
+  const [activeHeroIndex, setActiveHeroIndex] = useState(0);
+  const [isHeroPaused, setIsHeroPaused] = useState(false);
 
   // Rotating Health Quotes interval
   useEffect(() => {
@@ -36,6 +100,15 @@ export default function HomePage() {
     }, 6000);
     return () => clearInterval(timer);
   }, []);
+
+  // Auto rotate hero showcase every 6.5s if not paused
+  useEffect(() => {
+    if (isHeroPaused) return;
+    const heroTimer = setInterval(() => {
+      setActiveHeroIndex((prev) => (prev + 1) % HERO_SHOWCASE.length);
+    }, 6500);
+    return () => clearInterval(heroTimer);
+  }, [isHeroPaused]);
 
   const featuredProducts = PRODUCTS.filter((p) => p.isFeatured);
   const bestsellers = PRODUCTS.filter((p) => p.isBestseller);
@@ -47,6 +120,15 @@ export default function HomePage() {
     setFeaturedCarouselIndex((prev) => (prev === 0 ? Math.max(0, featuredProducts.length - 3) : prev - 1));
   };
 
+  const currentHero = HERO_SHOWCASE[activeHeroIndex];
+  const currentHeroProduct = PRODUCTS.find((p) => p.slug === currentHero.slug) || PRODUCTS[0];
+
+  const handleHeroQuickView = () => {
+    if (currentHeroProduct) {
+      setQuickViewProduct(currentHeroProduct);
+    }
+  };
+
   return (
     <div style={{ display: "flex", flexDirection: "column", background: "var(--color-bg)" }}>
       {quickViewProduct && (
@@ -56,212 +138,205 @@ export default function HomePage() {
         />
       )}
 
-      {/* 1. CINEMATIC FULL-SCREEN HERO WITH FLOATING DECORATIONS */}
       {/* 1. CINEMATIC LUXURY HERO SECTION */}
-      <section
-        style={{
-          position: "relative",
-          minHeight: "88vh",
-          display: "flex",
-          alignItems: "center",
-          background: "radial-gradient(ellipse at 78% 30%, rgba(243, 220, 155, 0.42) 0%, rgba(254, 248, 238, 0.92) 42%, #FAF6F0 100%)",
-          color: "var(--color-text)",
-          overflow: "hidden",
-          padding: "70px 0 90px",
-          borderBottom: "1.5px solid rgba(197, 139, 46, 0.25)",
-        }}
-      >
-        {/* Subtle warm ambient golden orbs */}
-        <div className="gold-particle" style={{ width: "160px", height: "160px", top: "12%", left: "6%", opacity: 0.25 }} />
-        <div className="gold-particle" style={{ width: "240px", height: "240px", bottom: "8%", right: "10%", animationDelay: "-3s", opacity: 0.3 }} />
-        <div className="gold-particle" style={{ width: "100px", height: "100px", top: "55%", left: "42%", animationDelay: "-5s", opacity: 0.2 }} />
+      <section className="hero-luxury-section">
+        {/* Ambient background watermark & glows */}
+        <div className="hero-heritage-watermark" aria-hidden="true" />
+        <div className="hero-ambient-glow" aria-hidden="true" />
 
-        <div className="container" style={{ position: "relative", zIndex: 10 }}>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
-              alignItems: "center",
-              gap: "48px",
-            }}
-          >
+        <div className="container hero-container">
+          <div className="hero-grid">
             {/* Left Hero Content */}
-            <div>
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "8px",
-                  padding: "8px 22px",
-                  borderRadius: "999px",
-                  background: "rgba(197, 139, 46, 0.12)",
-                  border: "1.5px solid rgba(197, 139, 46, 0.4)",
-                  color: "var(--color-secondary)",
-                  fontSize: "0.88rem",
-                  fontFamily: "var(--font-royal)",
-                  fontWeight: 800,
-                  letterSpacing: "0.12em",
-                  textTransform: "uppercase",
-                  marginBottom: "24px",
-                  boxShadow: "0 2px 10px rgba(197, 139, 46, 0.12)",
-                }}
-              >
-                <Sparkles size={16} style={{ color: "var(--color-primary)" }} />
-                Handcrafted Since 1994 • Brass Cauldrons
+            <div className="hero-left-col">
+              <div className="hero-heritage-pill">
+                <Sparkles size={15} className="pill-sparkle" />
+                <span className="pill-text-desktop">Handcrafted Since 1994 • Brass Cauldrons of Rajkot</span>
+                <span className="pill-text-mobile">Since 1994 • Brass Cauldrons • Rajkot</span>
               </div>
 
-              <h1
-                style={{
-                  fontSize: "clamp(2.8rem, 5.2vw, 4.3rem)",
-                  fontFamily: "var(--font-heading)",
-                  fontWeight: 800,
-                  lineHeight: 1.14,
-                  color: "var(--color-secondary)",
-                  marginBottom: "22px",
-                  letterSpacing: "-0.01em",
-                }}
-              >
+              <h1 className="hero-headline">
                 The Royal Symphony of the{" "}
-                <span className="gold-gradient-text" style={{ fontStyle: "italic", display: "inline-block" }}>
+                <span className="hero-accent-text">
                   Acoustic Crunch
                 </span>
               </h1>
 
-              <p
-                style={{
-                  fontSize: "1.18rem",
-                  color: "var(--color-text-light)",
-                  lineHeight: 1.8,
-                  marginBottom: "38px",
-                  maxWidth: "580px",
-                }}
-              >
-                Indulge in artisanal peanut chikkis, saffron Mamra almond brittles, and melt-in-mouth Kaju Katli prepared with <strong style={{ color: "var(--color-secondary)", fontWeight: 700 }}>100% organic Kolhapur jaggery</strong>, pure A2 cow desi ghee, and sun-roasted whole nuts. Zero refined white sugar.
+              <p className="hero-description">
+                Indulge in artisanal peanut chikkis, saffron Mamra almond brittles, and melt-in-mouth delicacies simmered in heavy brass cauldrons with <strong>100% organic Kolhapur jaggery</strong>, pure A2 cow desi ghee, and sun-roasted whole nuts. Zero refined white sugar.
               </p>
 
               {/* CTAs */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginBottom: "42px" }}>
-                <Link href="/shop" className="btn btn-primary btn-lg" style={{ fontSize: "1.1rem", padding: "16px 36px" }}>
-                  Explore All Sweets <ArrowRight size={20} />
+              <div className="hero-cta-group">
+                <Link href="/shop" className="btn btn-primary hero-btn-main">
+                  <span>Explore All Sweets</span>
+                  <ArrowRight size={19} />
                 </Link>
-                <Link href="/custom-box" className="btn btn-secondary btn-lg" style={{ fontSize: "1.1rem", padding: "16px 32px" }}>
-                  <Gift size={20} style={{ color: "var(--color-primary-light)" }} /> Build Custom Box
+                <Link href="/custom-box" className="btn btn-secondary hero-btn-custom">
+                  <Gift size={19} className="gift-ico" />
+                  <span>Build Custom Box</span>
                 </Link>
               </div>
 
               {/* Trust Indicators */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "repeat(3, 1fr)",
-                  gap: "20px",
-                  paddingTop: "26px",
-                  borderTop: "1.5px solid rgba(197, 139, 46, 0.22)",
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: "1.9rem", fontWeight: 800, color: "var(--color-primary-dark)", fontFamily: "var(--font-heading)" }}>
-                    4.98 ★
+              <div className="hero-trust-grid">
+                <div className="trust-col">
+                  <div className="trust-number">4.98 ★</div>
+                  <div className="trust-label">
+                    <span className="trust-label-desktop">15,000+ Connoisseurs</span>
+                    <span className="trust-label-mobile">15k+ Reviews</span>
                   </div>
-                  <div style={{ fontSize: "0.92rem", color: "var(--color-text-light)", fontWeight: 600 }}>15,000+ Orders</div>
                 </div>
-                <div>
-                  <div style={{ fontSize: "1.9rem", fontWeight: 800, color: "var(--color-primary-dark)", fontFamily: "var(--font-heading)" }}>
-                    100%
+                <div className="trust-divider" />
+                <div className="trust-col">
+                  <div className="trust-number">100%</div>
+                  <div className="trust-label">
+                    <span className="trust-label-desktop">Organic Kolhapur Gur</span>
+                    <span className="trust-label-mobile">Kolhapur Gur</span>
                   </div>
-                  <div style={{ fontSize: "0.92rem", color: "var(--color-text-light)", fontWeight: 600 }}>Organic Kolhapur Gur</div>
                 </div>
-                <div>
-                  <div style={{ fontSize: "1.9rem", fontWeight: 800, color: "var(--color-primary-dark)", fontFamily: "var(--font-heading)" }}>
-                    24h
+                <div className="trust-divider" />
+                <div className="trust-col">
+                  <div className="trust-number">24h</div>
+                  <div className="trust-label">
+                    <span className="trust-label-desktop">Wok-Fresh Dispatch</span>
+                    <span className="trust-label-mobile">Fresh Dispatch</span>
                   </div>
-                  <div style={{ fontSize: "0.92rem", color: "var(--color-text-light)", fontWeight: 600 }}>Express Dispatch</div>
                 </div>
+              </div>
+
+              {/* Purity Guarantee Strip */}
+              <div className="hero-purity-strip">
+                <ShieldCheck size={16} className="purity-shield" />
+                <span>Pure Desi Ghee • Zero Palm Oil • Zero White Sugar • 100% Veg</span>
               </div>
             </div>
 
-            {/* Right Hero Showcase Luxury Card */}
-            <div style={{ position: "relative" }}>
-              <div
-                style={{
-                  background: "#ffffff",
-                  borderRadius: "26px",
-                  padding: "26px",
-                  border: "1.5px solid rgba(197, 139, 46, 0.35)",
-                  boxShadow: "0 24px 60px rgba(184, 107, 39, 0.16), 0 4px 18px rgba(0, 0, 0, 0.05)",
-                  position: "relative",
-                  overflow: "hidden",
-                }}
-              >
-                {/* Gold corner accent glow */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "-40px",
-                    right: "-40px",
-                    width: "120px",
-                    height: "120px",
-                    borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(243, 220, 155, 0.5) 0%, transparent 70%)",
-                    pointerEvents: "none",
-                  }}
-                />
-
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "8px" }}>
-                  <span className="badge badge-gold" style={{ fontSize: "0.85rem", padding: "6px 14px", fontWeight: 700 }}>
-                    <Award size={14} /> Crown Jewel 2026
-                  </span>
-                  <span style={{ fontSize: "0.88rem", color: "var(--color-accent)", fontWeight: 700, fontFamily: "var(--font-royal)", letterSpacing: "0.06em", textTransform: "uppercase" }}>
-                    Stone-Rolled 3mm Glass Snap
-                  </span>
+            {/* Right Hero Showcase Centerpiece */}
+            <div
+              className="hero-right-col"
+              onMouseEnter={() => setIsHeroPaused(true)}
+              onMouseLeave={() => setIsHeroPaused(false)}
+            >
+              <div className="hero-showcase-card">
+                {/* Segmented Top Selection Tabs */}
+                <div className="showcase-tabs-bar">
+                  {HERO_SHOWCASE.map((item, idx) => {
+                    const TabIcon = item.tabIcon;
+                    const isActive = activeHeroIndex === idx;
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        onClick={() => setActiveHeroIndex(idx)}
+                        className={`showcase-tab-btn ${isActive ? "active" : ""}`}
+                      >
+                        <TabIcon size={13} className="tab-btn-icon" />
+                        <span>{item.tabLabel}</span>
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <div
-                  style={{
-                    borderRadius: "18px",
-                    overflow: "hidden",
-                    marginBottom: "20px",
-                    background: "var(--color-bg)",
-                    border: "1.5px solid rgba(197, 139, 46, 0.25)",
-                    position: "relative",
-                  }}
-                >
-                  <img
-                    src="/images/products/mixed-nuts-chikki.png"
-                    alt="Mixed Nuts Chikki"
-                    style={{ width: "100%", height: "300px", objectFit: "cover", display: "block" }}
-                  />
-                </div>
+                {/* Visual Image Presentation */}
+                <div className="showcase-visual-wrap">
+                  {/* Nav Arrows */}
+                  <button
+                    type="button"
+                    onClick={() => setActiveHeroIndex((prev) => (prev === 0 ? HERO_SHOWCASE.length - 1 : prev - 1))}
+                    className="showcase-nav-btn prev"
+                    aria-label="Previous signature sweet"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveHeroIndex((prev) => (prev + 1) % HERO_SHOWCASE.length)}
+                    className="showcase-nav-btn next"
+                    aria-label="Next signature sweet"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
 
-                <div>
-                  <div style={{ fontFamily: "var(--font-royal)", fontSize: "0.84rem", textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--color-accent)", fontWeight: 800 }}>
-                    Artisanal Chikki / Brittle
+                  <div className="showcase-image-holder">
+                    <img
+                      key={currentHero.id}
+                      src={currentHero.image}
+                      alt={currentHero.title}
+                      className="showcase-img"
+                    />
                   </div>
-                  <h3 style={{ fontFamily: "var(--font-heading)", fontSize: "1.6rem", color: "var(--color-secondary)", marginTop: "6px", fontWeight: 700 }}>
-                    Mixed Nuts Chikki
-                  </h3>
-                  <p style={{ fontSize: "0.98rem", color: "var(--color-text-light)", marginTop: "6px", lineHeight: 1.65 }}>
-                    Almonds, pistachios, cashews, and walnuts folded in shimmering amber jaggery with crisp acoustic snap.
-                  </p>
+
+                  {/* Overlaid Sensory & Craft Badges */}
+                  <div className="floating-badge-top-left">
+                    <Award size={13} className="badge-ico" />
+                    <span>{currentHero.badge}</span>
+                  </div>
+
+                  <div className="floating-badge-top-right">
+                    <span>{currentHero.sensoryTag}</span>
+                  </div>
+
+                  <div className="floating-badge-bottom-left">
+                    <Volume2 size={13} className="badge-ico" />
+                    <span>{currentHero.sensoryPill}</span>
+                  </div>
+
+                  <div className="floating-badge-bottom-right">
+                    <span>{currentHero.craftPill}</span>
+                  </div>
                 </div>
 
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginTop: "20px",
-                    paddingTop: "18px",
-                    borderTop: "1.5px solid rgba(197, 139, 46, 0.2)",
-                  }}
-                >
-                  <div>
-                    <span style={{ fontSize: "1.75rem", fontWeight: 800, color: "var(--color-secondary)", fontFamily: "var(--font-heading)" }}>₹749</span>
-                    <span style={{ fontSize: "0.95rem", color: "var(--color-text-light)", marginLeft: "8px", fontWeight: 600 }}>/ 500g Tin</span>
+                {/* Card Info & Pricing */}
+                <div className="showcase-info-body">
+                  <div className="showcase-meta-row">
+                    <span className="showcase-cat-label">{currentHero.categoryLabel}</span>
+                    <div className="showcase-dots">
+                      {HERO_SHOWCASE.map((_, dotIdx) => (
+                        <button
+                          key={dotIdx}
+                          type="button"
+                          onClick={() => setActiveHeroIndex(dotIdx)}
+                          className={`showcase-dot ${activeHeroIndex === dotIdx ? "active" : ""}`}
+                          aria-label={`Show slide ${dotIdx + 1}`}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <Link href="/shop/mixed-nuts-chikki" className="btn btn-primary btn-sm" style={{ fontSize: "0.96rem", padding: "10px 22px" }}>
-                    View Details
-                  </Link>
+
+                  <h3 className="showcase-title">{currentHero.title}</h3>
+                  <p className="showcase-desc">{currentHero.description}</p>
+
+                  <div className="showcase-action-strip">
+                    <div className="showcase-pricing">
+                      <div className="price-main">
+                        <span className="price-val">₹{currentHero.price}</span>
+                        <span className="price-unit">{currentHero.unit}</span>
+                      </div>
+                      <div className="price-sub">
+                        <span className="price-orig">₹{currentHero.originalPrice}</span>
+                        <span className="price-save">Save {currentHero.savePercent}%</span>
+                      </div>
+                    </div>
+
+                    <div className="showcase-btn-actions">
+                      <button
+                        type="button"
+                        onClick={handleHeroQuickView}
+                        className="showcase-quickview-btn"
+                        title="Quick View"
+                      >
+                        <Eye size={15} />
+                        <span>Quick View</span>
+                      </button>
+                      <Link
+                        href={`/shop/${currentHero.slug}`}
+                        className="showcase-explore-btn"
+                      >
+                        <span>Details</span>
+                        <ArrowRight size={15} />
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -695,6 +770,928 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <style jsx>{`
+        /* ========================================================
+           LUXURY HERO SECTION STYLING
+           ======================================================== */
+        .hero-luxury-section {
+          position: relative;
+          min-height: 86vh;
+          display: flex;
+          align-items: center;
+          background: radial-gradient(ellipse at 78% 28%, rgba(246, 226, 168, 0.45) 0%, rgba(254, 250, 244, 0.95) 50%, #FAF6F0 100%);
+          color: var(--color-text);
+          overflow: hidden;
+          padding: 68px 0 88px;
+          border-bottom: 1.5px solid rgba(197, 139, 46, 0.25);
+        }
+
+        /* Subtle Indian Royal Jaali Watermark Pattern */
+        .hero-heritage-watermark {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          opacity: 0.045;
+          background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M30 0l30 30-30 30L0 30zM30 10l20 20-20 20L10 30z' fill='%23C58B2E' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E");
+          background-repeat: repeat;
+          z-index: 1;
+        }
+
+        /* Ambient Glow behind right showcase */
+        .hero-ambient-glow {
+          position: absolute;
+          top: 15%;
+          right: 8%;
+          width: 540px;
+          height: 540px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(212, 168, 83, 0.3) 0%, rgba(243, 220, 155, 0.12) 45%, transparent 70%);
+          filter: blur(45px);
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        .hero-container {
+          position: relative;
+          z-index: 10;
+          width: 100%;
+          max-width: 1320px;
+          box-sizing: border-box;
+        }
+
+        .hero-grid {
+          display: grid;
+          grid-template-columns: 1.15fr 0.95fr;
+          align-items: center;
+          gap: 52px;
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+        }
+
+        /* Left Column */
+        .hero-left-col {
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+        }
+
+        .pill-text-desktop {
+          display: inline;
+        }
+        .pill-text-mobile {
+          display: none;
+        }
+
+        .trust-label-desktop {
+          display: inline;
+        }
+        .trust-label-mobile {
+          display: none;
+        }
+
+        .hero-heritage-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 20px;
+          border-radius: 999px;
+          background: rgba(197, 139, 46, 0.12);
+          border: 1.5px solid rgba(197, 139, 46, 0.38);
+          color: var(--color-secondary);
+          font-size: 0.86rem;
+          font-family: var(--font-royal);
+          font-weight: 800;
+          letter-spacing: 0.12em;
+          text-transform: uppercase;
+          margin-bottom: 22px;
+          box-shadow: 0 2px 10px rgba(197, 139, 46, 0.12);
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+
+        .hero-heritage-pill :global(.pill-sparkle) {
+          color: var(--color-primary);
+          flex-shrink: 0;
+        }
+
+        .hero-headline {
+          font-size: clamp(2.7rem, 4.8vw, 4.1rem);
+          font-family: var(--font-heading);
+          font-weight: 800;
+          line-height: 1.14;
+          color: var(--color-secondary);
+          margin-bottom: 20px;
+          letter-spacing: -0.015em;
+        }
+
+        .hero-accent-text {
+          font-style: italic;
+          display: inline-block;
+          background: linear-gradient(135deg, #a5701e 0%, #c58b2e 50%, #8b5a14 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+        }
+
+        .hero-description {
+          font-size: 1.14rem;
+          color: var(--color-text-light);
+          line-height: 1.8;
+          margin-bottom: 36px;
+          max-width: 580px;
+        }
+
+        .hero-description strong {
+          color: var(--color-secondary);
+          font-weight: 700;
+        }
+
+        .hero-cta-group {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 16px;
+          margin-bottom: 38px;
+        }
+
+        .hero-btn-main {
+          font-size: 1.08rem;
+          padding: 15px 34px;
+          border-radius: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-weight: 700;
+          box-shadow: 0 4px 18px rgba(197, 139, 46, 0.35);
+          transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .hero-btn-main:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(197, 139, 46, 0.45);
+        }
+
+        .hero-btn-custom {
+          font-size: 1.08rem;
+          padding: 15px 30px;
+          border-radius: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          font-weight: 700;
+          transition: transform 0.2s ease;
+        }
+        .hero-btn-custom:hover {
+          transform: translateY(-2px);
+        }
+        .hero-btn-custom :global(.gift-ico) {
+          color: var(--color-primary-light);
+          flex-shrink: 0;
+        }
+
+        /* Trust Strip */
+        .hero-trust-grid {
+          display: flex;
+          align-items: center;
+          gap: 22px;
+          padding-top: 24px;
+          border-top: 1.5px solid rgba(197, 139, 46, 0.22);
+          margin-bottom: 18px;
+          width: 100%;
+          max-width: 560px;
+        }
+
+        .trust-col {
+          flex: 1;
+        }
+
+        .trust-number {
+          font-size: 1.85rem;
+          font-weight: 800;
+          color: var(--color-primary-dark);
+          font-family: var(--font-heading);
+          line-height: 1.2;
+        }
+
+        .trust-label {
+          font-size: 0.88rem;
+          color: var(--color-text-light);
+          font-weight: 600;
+          margin-top: 3px;
+        }
+
+        .trust-divider {
+          width: 1px;
+          height: 38px;
+          background: rgba(197, 139, 46, 0.28);
+          flex-shrink: 0;
+        }
+
+        .hero-purity-strip {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          font-size: 0.82rem;
+          color: #7a541e;
+          font-weight: 700;
+          background: rgba(197, 139, 46, 0.08);
+          padding: 7px 16px;
+          border-radius: 999px;
+          border: 1px solid rgba(197, 139, 46, 0.22);
+        }
+        .hero-purity-strip :global(.purity-shield) {
+          color: #1e5a39;
+          flex-shrink: 0;
+        }
+
+        /* Right Column Showcase Card */
+        .hero-right-col {
+          position: relative;
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+        }
+
+        .hero-showcase-card {
+          background: #ffffff;
+          border-radius: 26px;
+          border: 1.5px solid rgba(197, 139, 46, 0.38);
+          box-shadow: 0 24px 60px rgba(184, 107, 39, 0.16), 0 4px 18px rgba(0, 0, 0, 0.04);
+          overflow: hidden;
+          position: relative;
+          width: 100%;
+          max-width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .hero-showcase-card:hover {
+          box-shadow: 0 28px 70px rgba(184, 107, 39, 0.22), 0 6px 22px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Top Selection Tabs */
+        .showcase-tabs-bar {
+          display: flex;
+          gap: 6px;
+          padding: 12px 14px;
+          background: #faf4eb;
+          border-bottom: 1px solid rgba(197, 139, 46, 0.2);
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .showcase-tabs-bar::-webkit-scrollbar {
+          display: none;
+        }
+
+        .showcase-tab-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 7px 13px;
+          border-radius: 999px;
+          border: 1px solid rgba(197, 139, 46, 0.25);
+          background: transparent;
+          color: var(--color-text-light);
+          font-size: 0.82rem;
+          font-weight: 700;
+          cursor: pointer;
+          white-space: nowrap;
+          transition: all 0.2s ease;
+        }
+        .showcase-tab-btn:hover {
+          color: var(--color-secondary);
+          border-color: var(--color-primary);
+        }
+        .showcase-tab-btn.active {
+          background: linear-gradient(135deg, #3c1518 0%, #200b0d 100%);
+          color: #fce7b0;
+          border-color: #3c1518;
+          box-shadow: 0 2px 8px rgba(60, 21, 24, 0.25);
+        }
+        .showcase-tab-btn :global(.tab-btn-icon) {
+          flex-shrink: 0;
+        }
+
+        /* Visual Container */
+        .showcase-visual-wrap {
+          position: relative;
+          height: 310px;
+          overflow: hidden;
+          background: #faf6f0;
+        }
+
+        .showcase-image-holder {
+          width: 100%;
+          height: 100%;
+        }
+
+        .showcase-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .showcase-visual-wrap:hover .showcase-img {
+          transform: scale(1.05);
+        }
+
+        /* Nav Arrows */
+        .showcase-nav-btn {
+          position: absolute;
+          top: 50%;
+          transform: translateY(-50%);
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.92);
+          backdrop-filter: blur(8px);
+          border: 1px solid rgba(197, 139, 46, 0.35);
+          color: var(--color-secondary);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          z-index: 6;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+          opacity: 0;
+        }
+        .showcase-visual-wrap:hover .showcase-nav-btn {
+          opacity: 1;
+        }
+        .showcase-nav-btn:hover {
+          background: #ffffff;
+          transform: translateY(-50%) scale(1.08);
+          color: var(--color-primary-dark);
+        }
+        .showcase-nav-btn.prev {
+          left: 12px;
+        }
+        .showcase-nav-btn.next {
+          right: 12px;
+        }
+
+        /* Floating Badges Over Image */
+        .floating-badge-top-left {
+          position: absolute;
+          top: 14px;
+          left: 14px;
+          background: rgba(54, 18, 22, 0.88);
+          backdrop-filter: blur(8px);
+          color: #fce7b0;
+          border: 1px solid rgba(212, 168, 83, 0.45);
+          padding: 5px 12px;
+          border-radius: 999px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+          z-index: 5;
+        }
+        .floating-badge-top-left :global(.badge-ico) {
+          color: #d4a853;
+          flex-shrink: 0;
+        }
+
+        .floating-badge-top-right {
+          position: absolute;
+          top: 14px;
+          right: 14px;
+          background: rgba(255, 255, 255, 0.94);
+          backdrop-filter: blur(8px);
+          color: var(--color-accent);
+          border: 1px solid rgba(197, 139, 46, 0.4);
+          padding: 5px 12px;
+          border-radius: 999px;
+          font-size: 0.78rem;
+          font-weight: 800;
+          font-family: var(--font-royal);
+          letter-spacing: 0.05em;
+          text-transform: uppercase;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+          z-index: 5;
+        }
+
+        .floating-badge-bottom-left {
+          position: absolute;
+          bottom: 14px;
+          left: 14px;
+          background: rgba(255, 255, 255, 0.94);
+          backdrop-filter: blur(8px);
+          color: var(--color-secondary);
+          border: 1px solid rgba(197, 139, 46, 0.35);
+          padding: 6px 13px;
+          border-radius: 999px;
+          font-size: 0.8rem;
+          font-weight: 800;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+          z-index: 5;
+        }
+        .floating-badge-bottom-left :global(.badge-ico) {
+          color: #c58b2e;
+          flex-shrink: 0;
+        }
+
+        .floating-badge-bottom-right {
+          position: absolute;
+          bottom: 14px;
+          right: 14px;
+          background: rgba(197, 139, 46, 0.94);
+          backdrop-filter: blur(8px);
+          color: #ffffff;
+          padding: 5px 12px;
+          border-radius: 999px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+          z-index: 5;
+        }
+
+        /* Info Body */
+        .showcase-info-body {
+          padding: 22px 24px 24px;
+        }
+
+        .showcase-meta-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 6px;
+        }
+
+        .showcase-cat-label {
+          font-family: var(--font-royal);
+          font-size: 0.82rem;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          color: var(--color-accent);
+          font-weight: 800;
+        }
+
+        .showcase-dots {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+        }
+        .showcase-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          border: none;
+          background: rgba(197, 139, 46, 0.3);
+          cursor: pointer;
+          padding: 0;
+          transition: all 0.25s ease;
+        }
+        .showcase-dot.active {
+          width: 22px;
+          border-radius: 999px;
+          background: var(--color-primary);
+        }
+
+        .showcase-title {
+          font-family: var(--font-heading);
+          font-size: 1.6rem;
+          color: var(--color-secondary);
+          margin: 0 0 6px 0;
+          font-weight: 700;
+          line-height: 1.25;
+        }
+
+        .showcase-desc {
+          font-size: 0.94rem;
+          color: var(--color-text-light);
+          margin: 0;
+          line-height: 1.6;
+        }
+
+        .showcase-action-strip {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: 18px;
+          padding-top: 16px;
+          border-top: 1.5px solid rgba(197, 139, 46, 0.2);
+          gap: 12px;
+        }
+
+        .showcase-pricing {
+          display: flex;
+          flex-direction: column;
+        }
+
+        .price-main {
+          display: flex;
+          align-items: baseline;
+          gap: 6px;
+        }
+        .price-val {
+          font-size: 1.7rem;
+          font-weight: 800;
+          color: var(--color-secondary);
+          font-family: var(--font-heading);
+          line-height: 1;
+        }
+        .price-unit {
+          font-size: 0.88rem;
+          color: var(--color-text-light);
+          font-weight: 600;
+        }
+
+        .price-sub {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 2px;
+        }
+        .price-orig {
+          font-size: 0.85rem;
+          text-decoration: line-through;
+          color: #9c8a7e;
+        }
+        .price-save {
+          font-size: 0.78rem;
+          font-weight: 700;
+          color: #1e5a39;
+          background: rgba(30, 90, 57, 0.1);
+          padding: 1px 6px;
+          border-radius: 4px;
+        }
+
+        .showcase-btn-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+
+        .showcase-quickview-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 10px 14px;
+          border-radius: 10px;
+          border: 1.5px solid rgba(197, 139, 46, 0.4);
+          background: #ffffff;
+          color: var(--color-secondary);
+          font-size: 0.88rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+        .showcase-quickview-btn:hover {
+          border-color: var(--color-primary);
+          background: rgba(197, 139, 46, 0.08);
+          color: var(--color-primary-dark);
+        }
+
+        .showcase-explore-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 10px 18px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+          color: #ffffff;
+          font-size: 0.88rem;
+          font-weight: 700;
+          text-decoration: none;
+          box-shadow: 0 2px 8px rgba(197, 139, 46, 0.3);
+          transition: all 0.2s ease;
+        }
+        .showcase-explore-btn:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(197, 139, 46, 0.45);
+        }
+
+        /* ========================================================
+           RESPONSIVE BREAKPOINTS
+           ======================================================== */
+        @media (max-width: 1040px) {
+          .hero-luxury-section {
+            padding: 48px 0 64px;
+            min-height: auto;
+          }
+
+          .hero-grid {
+            grid-template-columns: 1fr;
+            gap: 38px;
+            width: 100%;
+            max-width: 100%;
+          }
+
+          .hero-left-col {
+            align-items: center;
+            text-align: center;
+            max-width: 680px;
+            margin: 0 auto;
+            width: 100%;
+          }
+
+          .hero-description {
+            margin-left: auto;
+            margin-right: auto;
+          }
+
+          .hero-cta-group {
+            justify-content: center;
+          }
+
+          .hero-trust-grid {
+            margin: 0 auto 16px;
+            justify-content: center;
+          }
+
+          .hero-right-col {
+            max-width: 480px;
+            margin: 0 auto;
+            width: 100%;
+          }
+
+          .showcase-nav-btn {
+            opacity: 0.9;
+          }
+        }
+
+        @media (max-width: 640px) {
+          .hero-luxury-section {
+            padding: 24px 0 44px;
+            min-height: auto;
+            overflow-x: hidden;
+          }
+
+          .hero-container {
+            padding-left: 14px;
+            padding-right: 14px;
+            width: 100%;
+            max-width: 100%;
+          }
+
+          .hero-grid {
+            gap: 26px;
+            width: 100%;
+            max-width: 100%;
+          }
+
+          .hero-left-col {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+          }
+
+          /* Responsive text toggles */
+          .pill-text-desktop {
+            display: none !important;
+          }
+          .pill-text-mobile {
+            display: inline !important;
+          }
+
+          .trust-label-desktop {
+            display: none !important;
+          }
+          .trust-label-mobile {
+            display: inline !important;
+          }
+
+          .hero-heritage-pill {
+            font-size: 0.7rem;
+            padding: 5px 12px;
+            margin-bottom: 12px;
+            letter-spacing: 0.05em;
+            max-width: 100%;
+            white-space: normal;
+            text-align: center;
+            line-height: 1.35;
+          }
+
+          .hero-headline {
+            font-size: clamp(1.75rem, 6.8vw, 2.2rem);
+            line-height: 1.18;
+            margin-bottom: 12px;
+            max-width: 100%;
+            word-wrap: break-word;
+          }
+
+          .hero-description {
+            font-size: 0.92rem;
+            line-height: 1.55;
+            margin-bottom: 18px;
+            max-width: 100%;
+          }
+
+          .hero-cta-group {
+            width: 100%;
+            max-width: 100%;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 18px;
+          }
+
+          .hero-btn-main,
+          .hero-btn-custom {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            justify-content: center;
+            padding: 13px 18px;
+            font-size: 0.96rem;
+            border-radius: 11px;
+          }
+
+          /* Compact 3-Column Trust Grid */
+          .hero-trust-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 4px;
+            width: 100%;
+            max-width: 100%;
+            padding-top: 14px;
+            margin-bottom: 12px;
+            box-sizing: border-box;
+          }
+
+          .trust-col {
+            text-align: center;
+            min-width: 0;
+            padding: 0 2px;
+          }
+
+          .trust-number {
+            font-size: 1.25rem;
+            line-height: 1.1;
+          }
+
+          .trust-label {
+            font-size: 0.7rem;
+            line-height: 1.25;
+            margin-top: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+          }
+
+          .trust-divider {
+            display: none;
+          }
+
+          /* Purity Guarantee Strip wrapping on mobile */
+          .hero-purity-strip {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 4px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            font-size: 0.68rem;
+            padding: 6px 10px;
+            text-align: center;
+            border-radius: 10px;
+            line-height: 1.35;
+          }
+
+          /* Right Showcase Card on Mobile */
+          .hero-right-col {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            margin: 0 auto;
+          }
+
+          .hero-showcase-card {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            border-radius: 18px;
+          }
+
+          .showcase-tabs-bar {
+            padding: 8px 8px;
+            gap: 5px;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+          }
+
+          .showcase-tab-btn {
+            font-size: 0.72rem;
+            padding: 5px 9px;
+            gap: 4px;
+            flex-shrink: 0;
+          }
+
+          .showcase-visual-wrap {
+            height: 205px;
+            width: 100%;
+            max-width: 100%;
+          }
+
+          .floating-badge-top-left {
+            font-size: 0.66rem;
+            padding: 3px 7px;
+            top: 8px;
+            left: 8px;
+            gap: 3px;
+          }
+
+          .floating-badge-top-right {
+            font-size: 0.66rem;
+            padding: 3px 7px;
+            top: 8px;
+            right: 8px;
+          }
+
+          .floating-badge-bottom-left {
+            font-size: 0.68rem;
+            padding: 3px 8px;
+            bottom: 8px;
+            left: 8px;
+            gap: 3px;
+          }
+
+          .floating-badge-bottom-right {
+            font-size: 0.66rem;
+            padding: 3px 7px;
+            bottom: 8px;
+            right: 8px;
+          }
+
+          .showcase-nav-btn {
+            width: 30px;
+            height: 30px;
+            opacity: 0.95;
+          }
+          .showcase-nav-btn.prev {
+            left: 6px;
+          }
+          .showcase-nav-btn.next {
+            right: 6px;
+          }
+
+          .showcase-info-body {
+            padding: 12px 14px 14px;
+            width: 100%;
+            box-sizing: border-box;
+          }
+
+          .showcase-cat-label {
+            font-size: 0.72rem;
+          }
+
+          .showcase-title {
+            font-size: 1.25rem;
+            margin-bottom: 3px;
+          }
+
+          .showcase-desc {
+            font-size: 0.82rem;
+            line-height: 1.45;
+          }
+
+          .showcase-action-strip {
+            margin-top: 12px;
+            padding-top: 10px;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+          }
+
+          .showcase-pricing {
+            flex-direction: row;
+            align-items: baseline;
+            justify-content: space-between;
+          }
+
+          .price-val {
+            font-size: 1.4rem;
+          }
+
+          .showcase-btn-actions {
+            width: 100%;
+            gap: 8px;
+          }
+
+          .showcase-quickview-btn,
+          .showcase-explore-btn {
+            flex: 1;
+            justify-content: center;
+            padding: 8px 10px;
+            font-size: 0.8rem;
+          }
+        }
+      `}</style>
     </div>
   );
 }
